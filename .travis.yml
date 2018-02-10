@@ -1,0 +1,45 @@
+sudo: false
+language: generic
+
+env:
+  global:
+    - PYENV_VERSION=3.6
+    - secure: "bmCyyIuugdaui3MBhwT0jo++UP1QQ/xqBE/J6QDExH4qONmf3UZU1TqBK3xMz0wDLtZ/NvRhHpzRTahCCA0bOApz49mPmNgNcq6mwfashTwBcZcSpk22fDU63eYLF4M9g8/zLjDfRg+mhlC5WmDVM4x2k4n9DFFs2hXnfC/1A/BswQIqTUa6p8L/7pJNmi8FuVvAge55W/44e2TS3Le8diWnfenCSu9+Ko4xPGLvXGJXdNfs0SVGqQaU5dZoSLs3AnvfNiVLkVG9ufqnC3FA+h3jSJt76dnZaHV3kvskslZd93YL50RtdcOlwtwBeE8uodYLxa100ZHw8tcp9nM06lBdUJPcKdMp7hPNIuwPrHICpjeG7H6LM2SA9k7v2yq4GpzWAIZ/a9dpr/8YwxE9BCNoCXz16wv/rL+01WjSxErbXrp1j5/zkLM+ktnNzQPxoH/tCXJECh0/XMLBAF/DokISrzmu2k2YduPqmUJZVYHCI7rTwTSoktwTuEsRjhjWOX1KSgWjFG4sTwSc+u8vy0KVvjmRu50oYBHIpVKtn6GcaR3mheYb9GdVCJk+Cr6NfH2Oj2/MstCWNeiTf1EC2lo/lv3Qt0B6yfV9L6zOja4LfOe479IIT6YgnZsEDrbBPQ+0wCtNuv7SseD7MOA8c07uaVidn1vjteGBp+yqt/g="
+matrix:
+  include:
+      - os: linux
+      - os: osx
+
+cache:
+  directories:
+    - $HOME/.stack
+
+addons:
+  apt:
+    packages:
+      - python3
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mkdir -p ~/.local/bin; export PATH=$HOME/.local/bin:$PATH; curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; brew install haskell-stack; brew install python3; fi
+  - stack update
+  - python3 -m pip install requests
+
+install: stack --no-terminal --install-ghc build --only-dependencies
+
+script:
+  - stack --no-terminal build --ghc-options -O2 --copy-bins --local-bin-path ./bin
+  - cp -r static bin
+
+after_success:
+  - mkdir artifacts
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -cvzf "artifacts/es-profile-visualiser.$TRAVIS_BRANCH.linux.tar.gz" bin; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then zip -r "artifacts/es-profile-visualiser.$TRAVIS_BRANCH.osx.zip" bin; fi
+
+
+deploy:
+  provider: script
+  script: python3 push_release.py
+  skip_cleanup: true
+  on:
+    tags: true
