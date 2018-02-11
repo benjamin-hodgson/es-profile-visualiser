@@ -36,10 +36,11 @@ def upload_assets(upload_url, session):
 
 
 def main():
-    tag = os.environ["TRAVIS_TAG"]
+    tag = sys.argv[1]
+    tok = sys.argv[2]
 
     with requests.Session() as session:
-        session.auth = ("benjamin-hodgson", os.environ["GITHUB_RELEASES_API_TOKEN"])
+        session.auth = ("benjamin-hodgson", tok)
 
         upload_url = get_or_create_release(tag, session)
 

@@ -25,7 +25,7 @@ before_install:
   - stack update
   - python3 -m pip install requests
 
-install: stack --no-terminal --install-ghc build --only-dependencies
+install: stack --no-terminal --install-ghc build --ghc-options -O2 --only-dependencies
 
 script:
   - stack --no-terminal build --ghc-options -O2 --copy-bins --local-bin-path ./bin
@@ -39,7 +39,7 @@ after_success:
 
 deploy:
   provider: script
-  script: python3 push_release.py
+  script: python3 push_release.py $TRAVIS_TAG $GITHUB_RELEASES_API_TOKEN
   skip_cleanup: true
   on:
     tags: true

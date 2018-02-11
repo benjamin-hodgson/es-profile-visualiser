@@ -1,0 +1,33 @@
+environment:
+  github_releases_api_token:
+    secure: z0Z5X8tnrXxwxFpErj/x0AAzNX0IxPbNcJN0HgvC1vAfRabyTeupgjHcYNgMRQX9
+  stack_root: C:\sr
+
+install:
+  - choco install haskell-stack
+  - stack update
+  - stack --no-terminal --install-ghc build --ghc-options -O2 --only-dependencies > nul
+  - C:\Python36-x64\python.exe -m pip install requests
+
+
+build_script:
+  - stack --no-terminal build --ghc-options -O2 --copy-bins --local-bin-path ./bin
+  - echo D | xcopy /e static bin\static
+
+
+after_build:
+  - mkdir artifacts
+  - 7z a -r ".\artifacts\es-profile-visualiser.%APPVEYOR_REPO_BRANCH%.win.zip" bin
+
+
+artifacts:
+  - path: artifacts\*
+
+
+deploy_script:
+  - ps: |
+      if ($env:appveyor_repo_tag -eq "true") {
+        C:\Python36-x64\python.exe push_release.py $env:appveyor_repo_tag_name $env:github_releases_api_token
+      }
+
+    
