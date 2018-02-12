@@ -1,8 +1,5 @@
 # es-profile-visualiser
 
-## Running from source
+Get binaries from [the releases page](https://github.com/benjamin-hodgson/es-profile-visualiser/releases).
 
-`stack build && stack exec es-profile-visualiser`
-
-
-TODO: precompiled binaries
+Or you can run from source. Install [Stack](https://docs.haskellstack.org/en/stable/README/), clone this repo, and run `stack build && stack exec es-profile-visualiser` from the repo root.
